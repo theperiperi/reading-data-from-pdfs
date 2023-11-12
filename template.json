@@ -1,0 +1,12 @@
+[
+  {
+    "page_no": 1,
+    "method": "extract",
+    "text": "text priya got"
+  },
+  {
+    "page_no": 2,
+    "method": "ocr",
+    "text": "text mahasvan got"
+  }
+]
