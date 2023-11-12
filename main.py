@@ -1,7 +1,9 @@
-from image_reader import ImageProcessor
-from PIL import Image
-import numpy as np
+import json
 
-reader = ImageProcessor("tesseract", "/usr/local/Cellar/tesseract/5.3.3/share/tessdata")
-text = reader.ocr_image(np.array(Image.open("screenshot.jpeg")))
-print(text)
+from pdf_reader import PDFTextExtractor
+
+pdf_text_extractor = PDFTextExtractor("Introduction to Text Processing.pdf")
+
+results = pdf_text_extractor.extract_text()
+
+print(json.dumps(results, indent=2))
