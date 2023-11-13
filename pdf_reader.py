@@ -1,11 +1,9 @@
-import json
+import io
 
-import fitz
-from PIL import Image
-import pytesseract
-
-import numpy as np
 import PIL
+import PyPDF2
+import pytesseract
+from PIL import Image
 
 from image_processor import ImageProcessor
 
@@ -18,28 +16,29 @@ class PDFTextExtractor:
         self.results = []
 
     def extract_text(self):
-        if self.pdf_stream:
-            doc = fitz.Document(stream=self.pdf_stream, filetype="pdf")
-        else:
-            doc = fitz.open(self.pdf_path)
 
-        self.results = []
-        for page_number in range(doc.page_count):
-            page = doc[page_number]
-            if page.get_text("text"):
-                text = page.get_text("text")
+        if self.pdf_stream:
+            rep = io.BytesIO(self.pdf_stream)
+            pdf = PyPDF2.PdfReader(rep)
+        else:
+            pdf = PyPDF2.PdfReader(self.pdf_path)
+
+        for page_number in range(len(pdf.pages)):
+            page = pdf.pages[page_number]
+            page_content = page.extract_text()
+            if page_content:
                 self.results.append({
                     "page_number": page_number + 1,
                     "method": "extract",
-                    "content": text
+                    "content": page_content
                 })
             else:
-                pixmap = page.get_pixmap()
-                image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
-                ocr_text = self.image_processor.ocr_image(np.array(image))
-                self.results.append({
-                    "page_number": page_number + 1,
-                    "method": "ocr",
-                    "content": ocr_text
-                })
+                page_content = pytesseract.image_to_string(PIL.Image.open(self.pdf_path), lang="lat")
+                self.results.append(
+                    {
+                        "page_number": page_number + 1,
+                        "method": "ocr",
+                        "content": page_content
+                    }
+                )
         return self.results
