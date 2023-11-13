@@ -11,13 +11,18 @@ from image_processor import ImageProcessor
 
 
 class PDFTextExtractor:
-    def __init__(self, pdf_path):
+    def __init__(self, pdf_path=None, pdf_stream=None):
         self.pdf_path = pdf_path
+        self.pdf_stream = pdf_stream
         self.image_processor = ImageProcessor()
         self.results = []
 
     def extract_text(self):
-        doc = fitz.open(self.pdf_path)
+        if self.pdf_stream:
+            doc = fitz.Document(stream=self.pdf_stream, filetype="pdf")
+        else:
+            doc = fitz.open(self.pdf_path)
+
         self.results = []
         for page_number in range(doc.page_count):
             page = doc[page_number]
