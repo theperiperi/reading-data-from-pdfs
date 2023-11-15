@@ -41,7 +41,6 @@ class PDFTextExtractor:
                 page = mupdf[page_number]
                 pixmap = page.get_pixmap()
                 image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
-                image.show()
                 page_content = pytesseract.image_to_string(image, lang="lat")
                 self.results.append(
                     {
