@@ -16,10 +16,6 @@ async def read_root():
 
 @app.post("/extract-text")
 async def extract_text(file: Annotated[bytes, File()]):
-    print("file_size", len(file))
-    with open("result.pdf", "wb") as f:
-        f.write(file)
-
     pdf_text_extractor = PDFTextExtractor(pdf_stream=file)
     results = pdf_text_extractor.extract_text()
     return JSONResponse(results)

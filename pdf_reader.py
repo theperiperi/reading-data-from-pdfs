@@ -1,9 +1,10 @@
 import io
+import os
 
-import PIL
 import PyPDF2
 import pytesseract
 from PIL import Image
+import fitz
 
 from image_processor import ImageProcessor
 
@@ -20,8 +21,12 @@ class PDFTextExtractor:
         if self.pdf_stream:
             rep = io.BytesIO(self.pdf_stream)
             pdf = PyPDF2.PdfReader(rep)
+            with open("temp.pdf", "wb") as f:
+                f.write(self.pdf_stream)
+            mupdf = fitz.open("temp.pdf")
         else:
             pdf = PyPDF2.PdfReader(self.pdf_path)
+            mupdf = fitz.open(self.pdf_path)
 
         for page_number in range(len(pdf.pages)):
             page = pdf.pages[page_number]
@@ -33,7 +38,11 @@ class PDFTextExtractor:
                     "content": page_content
                 })
             else:
-                page_content = pytesseract.image_to_string(PIL.Image.open(self.pdf_path), lang="lat")
+                page = mupdf[page_number]
+                pixmap = page.get_pixmap()
+                image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
+                image.show()
+                page_content = pytesseract.image_to_string(image, lang="lat")
                 self.results.append(
                     {
                         "page_number": page_number + 1,
@@ -41,4 +50,5 @@ class PDFTextExtractor:
                         "content": page_content
                     }
                 )
+        os.remove("temp.pdf")
         return self.results
